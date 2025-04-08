@@ -27,14 +27,19 @@ public class SecurityConfig {
     }
 
     @Bean
+    public TokenAuthenticationFilter tokenAuthenticationFilter() {
+        return new TokenAuthenticationFilter(userRepository);
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf().disable()
-            .addFilterBefore(new TokenAuthenticationFilter(userRepository), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-                .requestMatchers("/api/auth/register-server", "/api/auth/servers").authenticated()
-                .anyRequest().authenticated()
+                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() // Rutas públicas
+                .requestMatchers("/api/auth/**").authenticated() // Requiere autenticación para todo bajo /api/auth/
+                .anyRequest().permitAll() // Otras rutas públicas (si las hay)
             );
         return http.build();
     }

@@ -3,14 +3,15 @@ package com.miapp.mediastreaming.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "username"))
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,18 +19,19 @@ public class User {
 
     @NotBlank(message = "El nombre de usuario no puede estar vacío")
     @Size(min = 3, max = 50, message = "El nombre de usuario debe tener entre 3 y 50 caracteres")
-    @Column(unique = true)
+    @Column(nullable = false)
     private String username;
 
     @NotBlank(message = "El email no puede estar vacío")
     @Email(message = "El email debe ser válido")
-    @Column(unique = true)
+    @Pattern(regexp = ".*@.*\\..+", message = "El email debe contener @ y un dominio válido (ej. .es, .com, .ru)")
+    @Column(nullable = false)
     private String email;
 
     @NotBlank(message = "La contraseña no puede estar vacía")
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[!@#$%^&*]).*$", 
-             message = "La contraseña debe contener al menos una mayúscula y un carácter especial (!@#$%^&*)")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%&]).*$",
+            message = "La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial (!@#$%&)")    
     private String password;
 
     private String token;
@@ -59,8 +61,4 @@ public class User {
     public void setToken(String token) { this.token = token; }
     public List<MediaServer> getMediaServers() { return mediaServers; }
     public void setMediaServers(List<MediaServer> mediaServers) { this.mediaServers = mediaServers; }
-    public void addMediaServer(MediaServer mediaServer) {
-        mediaServers.add(mediaServer);
-        mediaServer.setUser(this);
-    }
 }
